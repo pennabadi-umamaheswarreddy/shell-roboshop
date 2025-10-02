@@ -3,6 +3,8 @@
 trap 'echo "There is an error in $LINENO, command is: $BASH_COMMAND"' ERR
 
 set -euo pipefail
+
+
 USERID=$(id -u)
 R="\e[31m"
 G="\e[32m"
@@ -26,7 +28,8 @@ fi
 ###### NodeJS ######
 dnf module disable nodejs -y &>>$LOG_FILE
 dnf module enable nodejs:20 -y &>>$LOG_FILE
-dnf install nodejst -y &>>$LOG_FILE
+dnf install nodejs -y &>>$LOG_FILE
+echo "Installing NODE JS 20 $g SUCCESS $N"
 
 id roboshop &>>$LOG_FILE
 if [ $? -ne 0 ]; then 
@@ -36,20 +39,17 @@ else
 fi
 
 mkdir -p /app 
-
 curl -o /tmp/catalogue.zip https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip &>>$LOG_FILE
-
 cd /app 
 rm -rf /app/*
 unzip /tmp/catalogue.zip &>>$LOG_FILE
-
 npm install  &>>$LOG_FILE
 cp $SCRIPT_DIR/catalogue.service /etc/systemd/system/catalogue.service
 systemctl daemon-reload
 systemctl enable catalogue &>>$LOG_FILE
+echo -e "Catalogue application setup $G SUCCESS $N"
 
 cp $SCRIPT_DIR/mongo.repo /etc/yum.repos.d/mongo.repo
-
 dnf install mongodb-mongoshysdjf -y &>>$LOG_FILE
 
 INDEX=$(mongosh mongodb.umamaheswarreddy.fun --quiet --eval "db.getMongo().getDBNames().indexOf('catalogue')")
@@ -60,4 +60,4 @@ else
 fi
 
 systemctl restart catalogue
-
+echo -e "Loading products and restarting Catalogue" $G SUCCESS $N"
